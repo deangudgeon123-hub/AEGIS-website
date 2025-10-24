@@ -1,143 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aegis — Intelligent Finance</title>
-    <link rel="stylesheet" href="style.css" />
-    <style>
-      body {
-        margin: 0;
-        overflow-x: hidden;
-        font-family: 'Inter', system-ui, sans-serif;
-        background: linear-gradient(180deg, #f4f4f4 0%, #e8e8e8 100%);
-        color: #111;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aegis — Intelligent Finance</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(180deg, #f4f4f4 0%, #e8e8e8 100%);
+      color: #111;
+    }
 
-      /* Canvas background */
-      #aegisCanvas {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-      }
+    /* Canvas background */
+    #aegisCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
 
-      /* Hero section */
-      .hero {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 0 1rem;
-      }
+    /* Hero section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0 1rem;
+    }
 
-      .hero h1 {
-        font-size: 3rem;
-        background: linear-gradient(90deg, #00ffcc, #a259ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-weight: 700;
-        margin-bottom: 1rem;
-      }
+    .hero h1 {
+      font-size: 3rem;
+      background: linear-gradient(90deg, #00ffcc, #a259ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
 
-      .hero p {
-        font-size: 1.2rem;
-        color: #333;
-        max-width: 600px;
-        line-height: 1.6;
-      }
+    .hero p {
+      font-size: 1.2rem;
+      color: #333;
+      max-width: 600px;
+      line-height: 1.6;
+    }
 
-      .cta-btn {
-        margin-top: 2rem;
-        padding: 0.8rem 2rem;
-        border: none;
-        border-radius: 50px;
-        background: linear-gradient(90deg, #00ffcc, #a259ff);
-        color: white;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: 0.3s ease;
-      }
+    .cta-btn {
+      margin-top: 2rem;
+      padding: 0.8rem 2rem;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(90deg, #00ffcc, #a259ff);
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
 
-      .cta-btn:hover {
-        opacity: 0.9;
-        transform: scale(1.03);
-      }
+    .cta-btn:hover {
+      opacity: 0.9;
+      transform: scale(1.03);
+    }
 
-      /* About Section */
-      #about {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(10px);
-        padding: 4rem 1rem;
-        position: relative;
-        z-index: 2;
-      }
+    /* About Section */
+    #about {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      padding: 4rem 1rem;
+      position: relative;
+      z-index: 2;
+    }
 
-      #about h2 {
-        font-size: 2.5rem;
-        color: #222;
-        margin-bottom: 1rem;
-      }
+    #about h2 {
+      font-size: 2.5rem;
+      color: #222;
+      margin-bottom: 1rem;
+    }
 
-      #about p {
-        max-width: 700px;
-        color: #444;
-        font-size: 1.1rem;
-        line-height: 1.6;
-      }
+    #about p {
+      max-width: 700px;
+      color: #444;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
 
-      footer {
-        text-align: center;
-        padding: 2rem;
-        font-size: 0.9rem;
-        color: #666;
-      }
-    </style>
-  </head>
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  </style>
+</head>
 
-  <body>
-    <!-- Animated background -->
-    <canvas id="aegisCanvas"></canvas>
+<body>
+  <!-- Background Canvas -->
+  <canvas id="aegisCanvas"></canvas>
 
-    <!-- Hero Section -->
-    <section class="hero">
-      <h1>Finance You Can Trust</h1>
-      <p>Intelligence you can verify. Aegis is redefining blockchain security for the next era of finance.</p>
-      <button class="cta-btn">Enter the Network</button>
-    </section>
+  <!-- Hero Section -->
+  <section class="hero">
+    <h1>Finance You Can Trust</h1>
+    <p>Intelligence you can verify. Aegis is redefining blockchain security for the next era of finance.</p>
+    <button class="cta-btn">Enter the Network</button>
+  </section>
 
-    <!-- About Section -->
-    <section id="about">
-      <h2>The Aegis Shield</h2>
-      <p>
-        Behind every transaction lies an intelligent defense.  
-        Our adaptive shield evolves with every block, ensuring transparency, security, and trust for both DeFi and traditional systems.
-      </p>
-    </section>
+  <!-- About Section -->
+  <section id="about">
+    <h2>The Aegis Shield</h2>
+    <p>
+      Behind every transaction lies an intelligent defense.  
+      Our adaptive shield evolves with every block, ensuring transparency, security, and trust for both DeFi and traditional systems.
+    </p>
+  </section>
 
-    <footer>© 2025 Aegis Technologies — Intelligent Finance, Secured by Design.</footer>
+  <footer>© 2025 Aegis Technologies — Intelligent Finance, Secured by Design.</footer>
 
-    <!-- Animation scripts -->
-    <script src="assets/three.min.js"></script>
-    <script src="assets/gsap.min.js"></script>
-    <script src="assets/morphShield.js"></script>
-    <!-- Add Three.js library -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+  <!-- Add Three.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 
-<!-- Create canvas for particles -->
-<canvas id="aegisCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></canvas>
-
-<!-- Load Aegis particle network -->
-<script src="assets/morphShield.js"></script>
-  </body>
+  <!-- Load Aegis particle network -->
+  <script src="assets/morphShield.js"></script>
+</body>
 </html>
