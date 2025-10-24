@@ -1,23 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AEGIS</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Aegis — Intelligent Finance</title>
+    <meta
+      name="description"
+      content="Aegis — intelligent finance with AI-grade security and transparent on-chain trust."
+    />
+    <!-- Tailwind (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              bgsoft: '#f5f6f8',   /* very light grey background */
+              aegisGreen: '#21e6a2', /* emerald/teal */
+              aegisPurple: '#a855f7' /* purple-magenta */
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Smooth fonts + nicer rendering */
+      html, body { height: 100%; }
+      body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+      /* Respect reduced motion */
+      @media (prefers-reduced-motion: reduce) {
+        .reduce-motion-hide { display: none !important; }
+      }
+      /* Soft grid (very faint) */
+      .soft-grid::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(to right, rgba(0,0,0,0.04) 1px, transparent 1px) 0 0/32px 32px,
+          linear-gradient(to bottom, rgba(0,0,0,0.04) 1px, transparent 1px) 0 0/32px 32px;
+        pointer-events: none;
+        mask-image: radial-gradient(ellipse at center, black 50%, transparent 100%);
+      }
+      /* Subtle vignette to pull focus to center */
+      .vignette::after {
+        content:"";
+        position:absolute; inset:0;
+        pointer-events:none;
+        background: radial-gradient(1200px 600px at 50% 40%, rgba(0,0,0,0.08), transparent 70%);
+      }
+      /* Button hover glow */
+      .btn-glow:hover {
+        box-shadow: 0 0 0 4px rgba(33,230,162,.15), 0 20px 40px -10px rgba(168,85,247,.35);
+        transform: translateY(-2px);
+      }
+    </style>
   </head>
-  <body class="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white flex flex-col items-center justify-center">
-    <h1 class="text-6xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500 mb-6">
-      AEGIS
-    </h1>
-    <p class="text-gray-300 text-lg max-w-md text-center mb-10">
-      Precision. Security. Evolution.<br>Your future, powered by intelligence.
-    </p>
-    <button class="px-8 py-4 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 transition-all text-black font-semibold">
-      Enter System
-    </button>
-    <footer class="absolute bottom-4 text-xs text-gray-500">
-      © 2025 Aegis Technologies
-    </footer>
+  <body class="bg-bgsoft text-neutral-900">
+    <!-- Canvas network background -->
+    <canvas id="network" class="fixed inset-0 reduce-motion-hide" aria-hidden="true"></canvas>
+
+    <!-- Soft grid + vignette overlay to add structure -->
+    <div class="soft-grid vignette fixed inset-0 pointer-events-none"></div>
+
+    <!-- Content -->
+    <main class="relative min-h-screen flex items-center justify-center">
+      <section class="w-full max-w-5xl mx-auto px-6 md:px-10 py-20 text-center">
+        <div
+          class="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white/70 px-4 py-1.5 mb-6 backdrop-blur"
+        >
+          <span class="h-2.5 w-2.5 rounded-full bg-gradient-to-r from-aegisGreen to-aegisPurple"></span>
+          <span class="text-sm text-neutral-600">Aegis • Intelligent Finance</span>
+        </div>
+
+        <h1
+          class="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight mb-5"
+        >
+          Finance you can <span class="text-transparent bg-clip-text bg-gradient-to-r from-aegisGreen to-aegisPurple">trust</span>.
+          Intelligence you can <span class="text-transparent bg-clip-text bg-gradient-to-r from-aegisPurple to-aegisGreen">verify</span>.
+        </h1>
+
+        <p class="text-neutral-600 md:text-lg max-w-2xl mx-auto mb-10">
+          Aegis unifies secure wallets, real-time risk signals, and transparent on-chain proofs —
+          delivering institutional-grade protection for modern finance.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a
+            href="#enter"
+            class="btn-glow inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-aegisGreen to-aegisPurple text-white px-6 py-3 font-semibold transition will-change-transform"
+          >
+            Enter the Network
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+              <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a
+            href="#learn"
+            class="inline-flex items-center gap-2 rounded-xl border border-neutral-300 bg-white/70 backdrop-blur px-6 py-3 font-semibold text-neutral-800 hover:bg-white transition"
+          >
+            Learn more
+          </a>
+        </div>
+
+        <!-- Quick trust badges -->
+        <div class="mt-12 flex items-center justify-center gap-6 opacity-70">
+          <span class="text-sm">Built for Web3 & Fintech</span>
+          <span class="h-1 w-1 rounded-full bg-neutral-300"></span>
+          <span class="text-sm">Auditable • API-first • YC-ready</span>
+        </div>
+      </section>
+    </main>
+
+    <!-- Lightweight canvas animation: living network in green↔purple -->
+    <script>
+      (function () {
+        const canvas = document.getElementById('network');
+        const ctx = canvas.getContext('2d', { alpha: true });
+        const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+
+        let W, H, nodes, links;
+        const NODE_COUNT = 64;            // density
+        const LINK_DIST = 140;            // how far to connect
+        const SPEED = 0.25;               // motion speed
+        const TRAIL = 0.08;               // motion blur
+
+        function resize() {
+          W = canvas.clientWidth = window.innerWidth;
+          H = canvas.clientHeight = window.innerHeight;
+          canvas.width = W * DPR;
+          canvas.height = H * DPR;
+          ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+          init();
+        }
+
+        function rand(min, max) { return Math.random() * (max - min) + min; }
+
+        function init() {
+          nodes = Array.from({ length: NODE_COUNT }, () => ({
+            x: rand(0, W),
+            y: rand(0, H),
+            vx: rand(-SPEED, SPEED),
+            vy: rand(-SPEED, SPEED)
+          }));
+          links = [];
+        }
+
+        function step() {
+          // motion blur: fade the previous frame
+          ctx.fillStyle = `rgba(245,246,248, ${TRAIL})`; // same as bgsoft with alpha
+          ctx.fillRect(0, 0, W, H);
+
+          // precompute gradient that shifts slightly over time
+          const t = Date.now() * 0.001;
+          const g = ctx.createLinearGradient(
+            W * (0.4 + 0.1*Math.sin(t*0.6)),
+            0,
+            W,
+            H * (0.6 + 0.1*Math.cos(t*0.7))
+          );
+          g.addColorStop(0, '#21e6a2'); // green
+          g.addColorStop(1, '#a855f7'); // purple
+
+          // update nodes
+          for (const n of nodes) {
+            n.x += n.vx;
+            n.y += n.vy;
+            if (n.x < 0 || n.x > W) n.vx *= -1;
+            if (n.y < 0 || n.y > H) n.vy *= -1;
+          }
+
+          // draw links
+          ctx.lineWidth = 1.2;
+          ctx.strokeStyle = g;
+          ctx.shadowColor = 'rgba(168,85,247,0.25)';
+          ctx.shadowBlur = 8;
+
+          links.length = 0;
+          for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+              const a = nodes[i], b = nodes[j];
+              const dx = a.x - b.x, dy = a.y - b.y;
+              const d = Math.hypot(dx, dy);
+              if (d < LINK_DIST) {
+                const alpha = 1 - d / LINK_DIST; // closer = brighter
+                links.push({ a, b, alpha });
+              }
+            }
+          }
+
+          for (const L of links) {
+            ctx.globalAlpha = 0.15 + 0.35 * L.alpha;
+            ctx.beginPath();
+            ctx.moveTo(L.a.x, L.a.y);
+            ctx.lineTo(L.b.x, L.b.y);
+            ctx.stroke();
+          }
+          ctx.globalAlpha = 1;
+
+          // draw nodes
+          for (const n of nodes) {
+            ctx.beginPath();
+            ctx.fillStyle = 'rgba(33,230,162,0.6)'; // soft green
+            ctx.arc(n.x, n.y, 1.4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          requestAnimationFrame(step);
+        }
+
+        resize();
+        window.addEventListener('resize', resize, { passive: true });
+        requestAnimationFrame(step);
+      })();
+    </script>
   </body>
 </html>
