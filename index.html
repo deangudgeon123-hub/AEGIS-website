@@ -2,137 +2,213 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aegis — Intelligent Finance</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <title>Aegis • Intelligent Finance</title>
+
+  <!-- Basic page styles (kept inline to keep this self-contained) -->
   <style>
+    :root {
+      --bg: #f5f6f8;           /* very light grey */
+      --ink: #111;
+      --muted: #444;
+      --green: #21e6a2;        /* emerald / teal */
+      --purple: #a855f7;       /* violet / magenta */
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
     body {
       margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Apple Color Emoji','Segoe UI Emoji';
       overflow-x: hidden;
-      font-family: 'Inter', system-ui, sans-serif;
-      background: linear-gradient(180deg, #f4f4f4 0%, #e8e8e8 100%);
-      color: #111;
     }
 
-    /* Canvas background */
+    /* Background canvas is fixed behind everything */
     #aegisCanvas {
       position: fixed;
-      top: 0;
-      left: 0;
+      inset: 0;
       width: 100%;
       height: 100%;
       z-index: -1;
+      display: block;
     }
 
-    /* Hero section */
+    /* Subtle structural grid for polish */
+    .soft-grid::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(to right, rgba(0,0,0,0.035) 1px, transparent 1px) 0 0/32px 32px,
+        linear-gradient(to bottom, rgba(0,0,0,0.035) 1px, transparent 1px) 0 0/32px 32px;
+      mask-image: radial-gradient(1000px 600px at 50% 40%, black 55%, transparent 100%);
+      z-index: 0;
+    }
+
     .hero {
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: grid;
+      place-items: center;
+      padding: 3rem 1.25rem;
       text-align: center;
-      padding: 0 1rem;
+      position: relative;
+      z-index: 1;
     }
 
-    .hero h1 {
-      font-size: 3rem;
-      background: linear-gradient(90deg, #00ffcc, #a259ff);
+    .badge {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(8px);
+      color: #555;
+      font-size: 0.9rem;
+      margin-bottom: 14px;
+    }
+    .badge .dot {
+      width: 10px; height: 10px; border-radius: 999px;
+      background: linear-gradient(90deg, var(--green), var(--purple));
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.35);
+    }
+
+    h1 {
+      font-size: clamp(2rem, 7vw, 3.25rem);
+      line-height: 1.1;
+      margin: 0 0 12px 0;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .grad {
+      background: linear-gradient(90deg, var(--green), var(--purple));
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
-      font-weight: 700;
-      margin-bottom: 1rem;
     }
-
-    .hero p {
-      font-size: 1.2rem;
-      color: #333;
-      max-width: 600px;
+    .sub {
+      max-width: 720px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: clamp(1rem, 2.7vw, 1.15rem);
       line-height: 1.6;
     }
 
-    .cta-btn {
-      margin-top: 2rem;
-      padding: 0.8rem 2rem;
-      border: none;
-      border-radius: 50px;
-      background: linear-gradient(90deg, #00ffcc, #a259ff);
-      color: white;
-      font-size: 1rem;
+    .cta-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 22px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 12px 20px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: white;
+      font-weight: 600;
       cursor: pointer;
-      transition: 0.3s ease;
+      transition: 160ms ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary {
+      color: white;
+      border: none;
+      background: linear-gradient(90deg, var(--green), var(--purple));
+      box-shadow: 0 16px 36px -12px rgba(168,85,247,0.35);
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,0.8);
     }
 
-    .cta-btn:hover {
-      opacity: 0.9;
-      transform: scale(1.03);
-    }
-
-    /* About Section */
+    /* About section where shield “locks in” */
     #about {
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: grid;
+      place-items: center;
       text-align: center;
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(10px);
-      padding: 4rem 1rem;
+      padding: 4rem 1.25rem;
       position: relative;
-      z-index: 2;
+      z-index: 1;
     }
-
+    #about .panel {
+      background: rgba(255,255,255,0.85);
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 20px;
+      padding: 28px 22px;
+      max-width: 800px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 30px 60px -28px rgba(0,0,0,0.2);
+    }
     #about h2 {
-      font-size: 2.5rem;
-      color: #222;
-      margin-bottom: 1rem;
+      margin: 0 0 10px 0;
+      font-size: clamp(1.75rem, 5vw, 2.25rem);
+      font-weight: 800;
     }
-
-    #about p {
-      max-width: 700px;
-      color: #444;
-      font-size: 1.1rem;
-      line-height: 1.6;
-    }
+    #about p { color: #333; line-height: 1.65; }
 
     footer {
       text-align: center;
-      padding: 2rem;
-      font-size: 0.9rem;
       color: #666;
+      padding: 28px 12px 40px;
     }
   </style>
 </head>
 
 <body>
-  <!-- Background Canvas -->
-  <canvas id="aegisCanvas"></canvas>
+  <!-- fixed background canvas -->
+  <canvas id="aegisCanvas" aria-hidden="true"></canvas>
+  <div class="soft-grid" aria-hidden="true"></div>
 
-  <!-- Hero Section -->
+  <!-- HERO -->
   <section class="hero">
-    <h1>Finance You Can Trust</h1>
-    <p>Intelligence you can verify. Aegis is redefining blockchain security for the next era of finance.</p>
-    <button class="cta-btn">Enter the Network</button>
+    <div>
+      <div class="badge">
+        <span class="dot"></span>
+        <span>Aegis • Intelligent Finance</span>
+      </div>
+
+      <h1>
+        Finance you can <span class="grad">trust</span>. Intelligence you can <span class="grad">verify</span>.
+      </h1>
+      <p class="sub">
+        Aegis unifies secure wallets, real-time risk signals and transparent on-chain proofs —
+        delivering institutional-grade protection for modern finance.
+      </p>
+
+      <div class="cta-row">
+        <button class="btn btn-primary">Enter the Network</button>
+        <button class="btn btn-ghost">Learn more</button>
+      </div>
+    </div>
   </section>
 
-    <!-- About Section -->
+  <!-- ABOUT (shield locks behind this) -->
   <section id="about">
-    <h2>The Aegis Shield</h2>
-    <p>
-      Behind every transaction lies an intelligent defense.  
-      Our adaptive shield evolves with every block, ensuring transparency, security, and trust for both DeFi and traditional systems.
-    </p>
+    <div class="panel">
+      <h2>The Aegis Shield</h2>
+      <p>
+        As you progress, the distributed network coheres into a single protective form —
+        a wireframe shield — representing verifiable trust at the core of Aegis.
+        Real-time, adaptive and transparent by design.
+      </p>
+    </div>
   </section>
 
-  <footer>
-    © 2025 Aegis Technologies — Intelligent Finance, Secured by Design.
-  </footer>
+  <footer>© 2025 Aegis Technologies — Intelligent Finance, Secured by Design.</footer>
 
-  <!-- Add Three.js library -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+  <!-- Three.js from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 
-  <!-- Load Aegis particle network -->
-  <script src="assets/morphShield.js" defer></script>
+  <!-- Your animation logic -->
+  <script src="assets/morphShield.js"></script>
 </body>
 </html>
