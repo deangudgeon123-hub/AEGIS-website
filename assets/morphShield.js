@@ -1,6 +1,6 @@
+/* global THREE */
 // ====== AEGIS PARTICLE NETWORK (Starter Version) ======
 // Uses Three.js to render floating particles with green/purple glow.
-
 let scene, camera, renderer, particles, particlePositions;
 
 init();
