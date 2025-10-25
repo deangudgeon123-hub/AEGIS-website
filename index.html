@@ -2,29 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Aegis • Intelligent Finance</title>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
-        --bg: #0a0a0a;            /* dark background */
-        --ink: #f5f5f5;           /* light text */
-        --muted: #bbb;
-        --green: #00f5a0;         /* emerald */
-        --purple: #8b5cff;        /* violet */
+        --bg: #0a0a0a;
+        --ink: #f5f5f5;
+        --muted: #b8bac7;
+        --emerald: #00f5a0;
+        --violet: #8b5cff;
       }
 
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { height: 100%; }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        height: 100%;
+        scroll-behavior: smooth;
+      }
+
       body {
+        min-height: 100%;
         background: var(--bg);
         color: var(--ink);
-        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        font-family: "Inter", "Rajdhani", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         -webkit-font-smoothing: antialiased;
         overflow-x: hidden;
+        position: relative;
       }
 
       #aegisCanvas {
@@ -32,8 +47,15 @@
         inset: 0;
         width: 100%;
         height: 100%;
-        z-index: -1;
         display: block;
+        z-index: -2;
+      }
+
+      .soft-grid {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: -1;
       }
 
       .soft-grid::before {
@@ -42,10 +64,16 @@
         inset: 0;
         pointer-events: none;
         background:
-          linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px) 0 0/32px 32px,
-          linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px) 0 0/32px 32px;
-        mask-image: radial-gradient(1000px 600px at 50% 40%, black 55%, transparent 100%);
-        z-index: 0;
+          linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 32px 32px,
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 32px 32px;
+        mask-image: radial-gradient(1000px 620px at 50% 40%, rgba(0, 0, 0, 0.9) 50%, transparent 100%);
+        z-index: -1;
+        opacity: 0.6;
+      }
+
+      main {
+        position: relative;
+        z-index: 1;
       }
 
       .hero {
@@ -53,155 +81,195 @@
         display: grid;
         place-items: center;
         text-align: center;
-        padding: 3rem 1.25rem;
-        position: relative;
-        z-index: 1;
+        padding: 4rem 1.5rem 3rem;
+      }
+
+      .hero-inner {
+        max-width: 880px;
+        display: grid;
+        gap: 18px;
       }
 
       .badge {
         display: inline-flex;
-        gap: 8px;
         align-items: center;
-        padding: 8px 12px;
+        gap: 10px;
+        padding: 9px 14px;
         border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.1);
-        background: rgba(255,255,255,0.08);
-        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(12, 12, 12, 0.55);
         color: var(--muted);
         font-size: 0.9rem;
-        margin-bottom: 14px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        justify-self: center;
+        backdrop-filter: blur(12px);
       }
+
       .badge .dot {
-        width: 10px; height: 10px; border-radius: 50%;
-        background: linear-gradient(90deg, var(--green), var(--purple));
-        box-shadow: 0 0 12px rgba(139, 92, 255, 0.5);
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        background: linear-gradient(120deg, var(--emerald), var(--violet));
+        box-shadow: 0 0 16px rgba(139, 92, 255, 0.55);
       }
 
       h1 {
-        font-size: clamp(2rem, 7vw, 3.25rem);
-        line-height: 1.1;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        margin-bottom: 12px;
+        font-family: "Rajdhani", "Inter", sans-serif;
+        font-weight: 700;
+        font-size: clamp(2.4rem, 6.5vw, 3.75rem);
+        line-height: 1.05;
+        letter-spacing: 0.015em;
       }
-      .grad {
-        background: linear-gradient(90deg, var(--green), var(--purple));
+
+      h1 span {
+        background: linear-gradient(120deg, var(--emerald), var(--violet));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
+
       .sub {
-        max-width: 720px;
         margin: 0 auto;
+        max-width: 720px;
         color: var(--muted);
-        font-size: clamp(1rem, 2.7vw, 1.15rem);
-        line-height: 1.6;
+        font-size: clamp(1rem, 2.5vw, 1.15rem);
+        line-height: 1.65;
       }
 
       .cta-row {
         display: flex;
-        gap: 12px;
-        margin-top: 22px;
         justify-content: center;
+        align-items: center;
         flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 18px;
       }
+
       .btn {
-        padding: 12px 20px;
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 13px 24px;
         border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.1);
         font-weight: 600;
+        border: 1px solid transparent;
         cursor: pointer;
-        transition: 160ms ease;
+        transition: transform 180ms ease, box-shadow 180ms ease, background 220ms ease;
       }
-      .btn:hover { transform: translateY(-1px); }
+
       .btn-primary {
-        color: white;
-        border: none;
-        background: linear-gradient(90deg, var(--green), var(--purple));
-        box-shadow: 0 16px 36px -12px rgba(139, 92, 255, 0.45);
+        background: linear-gradient(120deg, rgba(0, 245, 160, 0.95), rgba(139, 92, 255, 0.95));
+        color: #050505;
+        box-shadow: 0 18px 42px -24px rgba(0, 245, 160, 0.75), 0 12px 32px -18px rgba(139, 92, 255, 0.65);
       }
+
       .btn-ghost {
-        background: rgba(255,255,255,0.08);
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.12);
         color: var(--ink);
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
       }
 
       #about {
         min-height: 100vh;
         display: grid;
         place-items: center;
+        padding: 5rem 1.5rem 4rem;
         text-align: center;
-        padding: 4rem 1.25rem;
-        position: relative;
-        z-index: 1;
       }
+
       #about .panel {
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 20px;
-        padding: 28px 22px;
-        max-width: 800px;
-        backdrop-filter: blur(8px);
-        box-shadow: 0 30px 60px -28px rgba(0,0,0,0.3);
+        max-width: 820px;
+        padding: 36px 28px;
+        border-radius: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(14, 14, 18, 0.62);
+        backdrop-filter: blur(14px);
+        box-shadow: 0 40px 80px -60px rgba(0, 0, 0, 0.75);
+        display: grid;
+        gap: 12px;
       }
+
       #about h2 {
-        font-size: clamp(1.75rem, 5vw, 2.25rem);
-        font-weight: 800;
-        margin-bottom: 10px;
+        font-family: "Rajdhani", "Inter", sans-serif;
+        font-size: clamp(1.9rem, 5vw, 2.5rem);
+        font-weight: 700;
       }
-      #about p { color: var(--muted); line-height: 1.65; }
+
+      #about p {
+        color: var(--muted);
+        line-height: 1.7;
+        font-size: clamp(1rem, 2.2vw, 1.1rem);
+      }
 
       footer {
         text-align: center;
         color: var(--muted);
-        padding: 28px 12px 40px;
+        padding: 36px 16px 48px;
+        font-size: 0.95rem;
+      }
+
+      @media (max-width: 640px) {
+        .hero {
+          padding-top: 5rem;
+          padding-bottom: 4rem;
+        }
+
+        .btn {
+          width: 100%;
+          max-width: 260px;
+        }
+
+        #about .panel {
+          padding: 30px 22px;
+        }
       }
     </style>
   </head>
-
   <body>
-    <!-- Background canvas -->
     <canvas id="aegisCanvas" aria-hidden="true"></canvas>
     <div class="soft-grid" aria-hidden="true"></div>
 
-    <!-- HERO -->
-    <section class="hero">
-      <div>
-        <div class="badge">
-          <span class="dot"></span>
-          <span>Aegis • Intelligent Finance</span>
+    <main>
+      <section class="hero" id="hero">
+        <div class="hero-inner">
+          <div class="badge">
+            <span class="dot"></span>
+            <span>Aegis • Intelligent Finance</span>
+          </div>
+          <h1>Finance you can <span>trust</span>. Intelligence you can <span>verify</span>.</h1>
+          <p class="sub">
+            Within Aegis, autonomous agents weave intelligence across the chain, correlating data, behavior, and risk in
+            real time. Every signal compounds, creating an ecosystem engineered for provable security.
+          </p>
+          <div class="cta-row">
+            <button class="btn btn-primary">Enter the Network</button>
+            <button class="btn btn-ghost">Learn More</button>
+          </div>
         </div>
+      </section>
 
-        <h1>
-          Finance you can <span class="grad">trust</span>. Intelligence you can <span class="grad">verify</span>.
-        </h1>
-        <p class="sub">
-          Aegis unifies secure wallets, real-time risk signals and transparent on-chain proofs —
-          delivering institutional-grade protection for modern finance.
-        </p>
-
-        <div class="cta-row">
-          <button class="btn btn-primary">Enter the Network</button>
-          <button class="btn btn-ghost">Learn more</button>
+      <section id="about">
+        <div class="panel">
+          <h2>The Aegis Shield</h2>
+          <p>
+            As you advance through the network, dispersed nodes harmonize and lock into formation. Their intelligence
+            converges as a layered hexagonal bulwark — the Aegis Shield — reinforcing every ledgered movement with
+            provable defense and adaptive vigilance.
+          </p>
         </div>
-      </div>
-    </section>
-
-    <!-- ABOUT -->
-    <section id="about">
-      <div class="panel">
-        <h2>The Aegis Shield</h2>
-        <p>
-          As you progress, the distributed network coheres into a single protective form —
-          a wireframe shield — representing verifiable trust at the core of Aegis.
-          Real-time, adaptive and transparent by design.
-        </p>
-      </div>
-    </section>
+      </section>
+    </main>
 
     <footer>© 2025 Aegis Technologies — Intelligent Finance, Secured by Design.</footer>
 
-    <!-- Three.js -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-    <!-- Animation logic -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <script src="assets/morphShield.js" defer></script>
   </body>
 </html>
