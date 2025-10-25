@@ -1,6 +1,3 @@
-import * as THREE from 'three';
-import { gsap } from 'gsap';
-
 let scene, camera, renderer, points, lines, shield, mixer;
 let clock = new THREE.Clock();
 const canvas = document.getElementById('aegisCanvas');
