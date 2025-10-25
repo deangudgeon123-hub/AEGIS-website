@@ -44,12 +44,12 @@
   root.add(clusterRoot, shieldRoot);
 
   // ---------- floating clusters (HERO) ----------
-  const clusterCount = 20;   // more groups
+  const clusterCount = 25;   // refined groups
   const clusters = [];
 
   const basePointMat = new THREE.PointsMaterial({
     color: new THREE.Color('#00f5a0'),
-    size: 0.14,                // bigger points
+    size: 0.3,
     transparent: true,
     opacity: 0.95,
     depthWrite: false,
@@ -59,7 +59,7 @@
   const baseLineMat = new THREE.LineBasicMaterial({
     color: new THREE.Color('#8b5cff'),
     transparent: true,
-    opacity: 0.5,              // brighter lines
+    opacity: 0.7,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
   });
@@ -67,9 +67,9 @@
   for (let i = 0; i < clusterCount; i++) {
     const group = new THREE.Group();
 
-    // denser & larger clusters
-    const pointTotal   = Math.floor(lerp(80, 120, Math.random()));
-    const sphereRadius = lerp(2.2, 3.6, Math.random());
+    // defined & larger clusters
+    const pointTotal   = 5 + Math.floor(Math.random() * 4);
+    const sphereRadius = lerp(4, 6, Math.random());
 
     const positions = new Float32Array(pointTotal * 3);
     for (let j = 0; j < pointTotal; j++) {
@@ -86,16 +86,17 @@
     ptsGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
     const ptsMat = basePointMat.clone();
-    ptsMat.size = lerp(0.12, 0.18, Math.random());
+    ptsMat.size = lerp(0.25, 0.35, Math.random());
     const pts = new THREE.Points(ptsGeom, ptsMat);
     group.add(pts);
 
-    // random links
-    const conn = Math.floor(pointTotal * 1.8);
+    // minimal links
+    const conn = 4 + Math.floor(Math.random() * 3);
     const linePositions = new Float32Array(conn * 6);
     for (let k = 0; k < conn; k++) {
-      const a = (Math.random() * pointTotal) | 0;
-      const b = (Math.random() * pointTotal) | 0;
+      let a = (Math.random() * pointTotal) | 0;
+      let b = (Math.random() * pointTotal) | 0;
+      if (a === b) b = (b + 1) % pointTotal;
       linePositions.set([
         positions[a*3+0], positions[a*3+1], positions[a*3+2],
         positions[b*3+0], positions[b*3+1], positions[b*3+2]
@@ -118,17 +119,17 @@
     group.position.copy(basePos);
 
     const drift = new THREE.Vector3(
-      lerp(-0.18, 0.18, Math.random()),
-      lerp(-0.14, 0.14, Math.random()),
-      lerp(-0.12, 0.12, Math.random())
+      lerp(-0.1, 0.1, Math.random()),
+      lerp(-0.08, 0.08, Math.random()),
+      lerp(-0.08, 0.08, Math.random())
     );
     const axis = new THREE.Vector3(Math.random(), Math.random(), Math.random()).normalize();
-    const rotSpeed = lerp(0.09, 0.18, Math.random());
+    const rotSpeed = lerp(0.02, 0.06, Math.random());
 
     const pulse = { value: 1 };
     gsap.to(pulse, {
       value: lerp(1.08, 1.18, Math.random()),
-      duration: lerp(2.2, 3.6, Math.random()),
+      duration: lerp(4.4, 7.2, Math.random()),
       repeat: -1,
       yoyo: true,
       ease: 'sine.inOut',
@@ -297,7 +298,7 @@
       c.group.scale.setScalar(s);
 
       c.ptsMat.opacity  = lerp(0.95, 0.16, e);
-      c.lineMat.opacity = lerp(0.5, 0.14, e);
+      c.lineMat.opacity = lerp(0.7, 0.14, e);
     });
 
     // shield reveals / subtle motion
@@ -328,16 +329,20 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  // ---------- shield silhouette (heater/hex mix) ----------
+  // ---------- shield silhouette (flat-edged hex shield) ----------
   function insideShield(x, y) {
-    const ny = y / 5.2;
     const nx = x / 5.2;
-    if (ny > 0.22) {
-      const dx = nx;
-      const dy = ny - 0.4;
-      return dx*dx + dy*dy <= 0.46; // top arc
-    }
-    const lower = 0.95 - (ny + 0.9) * 0.6; // taper
-    return Math.abs(nx) <= lower;
+    const ny = y / 5.2;
+
+    // top edge flatter, sides angled
+    const topArc = Math.max(0.25 - ny, 0);
+    const sideSlope = 1.05 - Math.abs(nx) * 1.15;
+
+    // tighter taper near base
+    const baseCutoff = -0.8 + ny * 1.1;
+
+    // define hex-shield contour (like a crest)
+    return ny > -0.9 && ny < 0.45 && Math.abs(nx) < sideSlope && ny > baseCutoff - topArc;
   }
 })();
+
