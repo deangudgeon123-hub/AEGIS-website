@@ -45,11 +45,14 @@
 
   // ---------- floating clusters (HERO) ----------
   const clusterCount = 25;   // refined groups
+  const bandCount    = 5;    // horizontal bands to hint at a shield arc
   const clusters = [];
+
+  const clustersPerBand = Math.ceil(clusterCount / bandCount);
 
   const basePointMat = new THREE.PointsMaterial({
     color: new THREE.Color('#00f5a0'),
-    size: 0.3,
+    size: 0.24,
     transparent: true,
     opacity: 0.95,
     depthWrite: false,
@@ -59,7 +62,7 @@
   const baseLineMat = new THREE.LineBasicMaterial({
     color: new THREE.Color('#8b5cff'),
     transparent: true,
-    opacity: 0.7,
+    opacity: 0.45,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
   });
@@ -67,9 +70,14 @@
   for (let i = 0; i < clusterCount; i++) {
     const group = new THREE.Group();
 
-    // defined & larger clusters
+    const bandIndex = Math.floor(i / clustersPerBand);
+    const bandNormalized = bandCount <= 1 ? 0 : (bandIndex / (bandCount - 1)) * 2 - 1;
+    const columnIndex = i % clustersPerBand;
+    const columnCenter = (clustersPerBand - 1) * 0.5;
+
+    // lean clusters – fewer points, tighter bounds
     const pointTotal   = 5 + Math.floor(Math.random() * 4);
-    const sphereRadius = lerp(4, 6, Math.random());
+    const sphereRadius = lerp(1.4, 2.4, Math.random());
 
     const positions = new Float32Array(pointTotal * 3);
     for (let j = 0; j < pointTotal; j++) {
@@ -86,12 +94,12 @@
     ptsGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
     const ptsMat = basePointMat.clone();
-    ptsMat.size = lerp(0.25, 0.35, Math.random());
+    ptsMat.size = lerp(0.18, 0.26, Math.random());
     const pts = new THREE.Points(ptsGeom, ptsMat);
     group.add(pts);
 
     // minimal links
-    const conn = 4 + Math.floor(Math.random() * 3);
+    const conn = 1 + Math.floor(Math.random() * 3);
     const linePositions = new Float32Array(conn * 6);
     for (let k = 0; k < conn; k++) {
       let a = (Math.random() * pointTotal) | 0;
@@ -110,21 +118,31 @@
 
     clusterRoot.add(group);
 
-    // tighter layout so they’re visible
+    // distribute clusters into staggered bands ready for a shield arc
+    const baseScatterX = lerp(-8.5, 8.5, Math.random());
+    const alignedX = (columnIndex - columnCenter) * 2.6;
+    const bandJitter = lerp(-0.5, 0.5, Math.random());
+    const shieldYOffset = bandNormalized * 0.35;
+
     const basePos = new THREE.Vector3(
-      lerp(-9, 9, Math.random()),
-      lerp(-5.2, 5.2, Math.random()),
-      lerp(-3.2, 2.2, Math.random())
+      baseScatterX,
+      bandJitter,
+      lerp(-2.8, 1.4, Math.random())
     );
     group.position.copy(basePos);
 
     const drift = new THREE.Vector3(
-      lerp(-0.1, 0.1, Math.random()),
-      lerp(-0.08, 0.08, Math.random()),
-      lerp(-0.08, 0.08, Math.random())
+      lerp(0.25, 0.5, Math.random()),
+      lerp(0.22, 0.42, Math.random()),
+      lerp(0.18, 0.36, Math.random())
+    );
+    const motionFreq = new THREE.Vector3(
+      lerp(0.5, 0.9, Math.random()),
+      lerp(0.45, 0.8, Math.random()),
+      lerp(0.4, 0.7, Math.random())
     );
     const axis = new THREE.Vector3(Math.random(), Math.random(), Math.random()).normalize();
-    const rotSpeed = lerp(0.02, 0.06, Math.random());
+    const rotSpeed = lerp(0.03, 0.09, Math.random());
 
     const pulse = { value: 1 };
     gsap.to(pulse, {
@@ -140,11 +158,18 @@
       group,
       basePos,
       drift,
+      motionFreq,
       axis,
       rotSpeed,
       ptsMat,
       lineMat,
       pulse,
+      baseScatterX,
+      alignedX,
+      bandIndex,
+      bandNormalized,
+      bandJitter,
+      shieldYOffset,
       seed: Math.random() * Math.PI * 2,
     });
   }
@@ -283,12 +308,26 @@
     const t  = performance.now() * 0.001;
     const e  = easeInOutCubic(scroll);
 
-    // clusters breathe & contract to center
+    // clusters breathe & slide into staggered shield bands
     clusters.forEach((c) => {
-      const k = 1 - e * 0.85;
-      c.group.position.x = c.basePos.x * k + Math.sin(t*0.6 + c.seed) * c.drift.x * 8 * k;
-      c.group.position.y = c.basePos.y * k + Math.cos(t*0.5 + c.seed) * c.drift.y * 8 * k;
-      c.group.position.z = lerp(c.basePos.z, -1.1, e) + Math.sin(t*0.4 + c.seed) * c.drift.z * 6 * k;
+      const bandSpacing = lerp(1.15, 2.35, e);
+      const bandCenter = (bandCount - 1) * 0.5;
+      const targetBandY = (c.bandIndex - bandCenter) * bandSpacing;
+      const wobbleY = Math.sin(t * c.motionFreq.y + c.seed) * c.drift.y * 0.6
+        + Math.sin((t + c.seed) * 1.4) * c.drift.y * 0.35;
+      const yGoal = targetBandY + c.bandJitter + c.shieldYOffset * e + wobbleY;
+      c.group.position.y = lerp(c.group.position.y, yGoal, 0.18);
+
+      const scatterWeight = lerp(1, 0.18, e);
+      const hexTaper = 1 - Math.abs(c.bandNormalized) * 0.35 * e;
+      const wobbleX = Math.sin(t * c.motionFreq.x + c.seed * 1.37) * c.drift.x
+        + Math.sin((t * 1.7) + c.seed * 0.6) * c.drift.x * 0.5;
+      const xGoal = c.baseScatterX * scatterWeight + c.alignedX * (1 - scatterWeight);
+      c.group.position.x = lerp(c.group.position.x, xGoal * hexTaper + wobbleX, 0.2);
+
+      const wobbleZ = Math.sin(t * c.motionFreq.z + c.seed * 0.74) * c.drift.z;
+      const depthGoal = lerp(c.basePos.z, -1.2 + c.bandNormalized * 0.35, e) + wobbleZ;
+      c.group.position.z = lerp(c.group.position.z, depthGoal, 0.16);
 
       tmpAxis.copy(c.axis);
       tmpQ.setFromAxisAngle(tmpAxis, c.rotSpeed * dt);
@@ -297,8 +336,8 @@
       const s = lerp(1, c.pulse.value, 1 - e * 0.8);
       c.group.scale.setScalar(s);
 
-      c.ptsMat.opacity  = lerp(0.95, 0.16, e);
-      c.lineMat.opacity = lerp(0.7, 0.14, e);
+      c.ptsMat.opacity  = lerp(0.92, 0.18, e);
+      c.lineMat.opacity = lerp(0.45, 0.12, e);
     });
 
     // shield reveals / subtle motion
