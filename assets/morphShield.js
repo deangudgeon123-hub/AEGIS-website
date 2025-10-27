@@ -9,6 +9,13 @@
   const lerp = (a, b, t) => a + (b - a) * t;
   const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
   const easeInOutCubic = (t) => (t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2);
+  const shuffle = (arr) => {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
 
   // ---------- scene ----------
   const canvas = document.getElementById('aegisCanvas');
@@ -40,7 +47,7 @@
   const shieldRoot  = new THREE.Group();
   shieldRoot.visible = true;
   shieldRoot.userData.strength = 0;
-  shieldRoot.position.z = -1.8;
+  shieldRoot.position.set(0, 2.2, -1.8);
   root.add(clusterRoot, shieldRoot);
 
   // ---------- floating clusters (HERO) ----------
@@ -171,6 +178,8 @@
       bandJitter,
       shieldYOffset,
       seed: Math.random() * Math.PI * 2,
+      shieldTarget: new THREE.Vector3(),
+      shieldAxial: null,
     });
   }
 
@@ -206,8 +215,75 @@
       if (Math.abs(s) > shieldRadius) continue;
       const x = spacing * Math.sqrt(3) * (q + r/2);
       const y = spacing * (1.5 * r);
-      if (insideShield(x, y)) hexPts.push({ x, y });
+      if (insideShield(x, y)) hexPts.push({ x, y, q, r, s });
     }
+  }
+
+  // assign cluster targets so scattered notes can coalesce into the shield
+  if (hexPts.length && clusters.length) {
+    const indices = shuffle([...hexPts.keys()]).slice(0, clusters.length);
+    const axialMap = new Map();
+    const shieldElevation = 2.25;
+    const shieldDepth = -1.35;
+    indices.forEach((idx, clusterIndex) => {
+      const hex = hexPts[idx];
+      const c = clusters[clusterIndex];
+      c.shieldTarget.set(
+        hex.x * 0.95,
+        hex.y * 0.92 + shieldElevation,
+        shieldDepth + (hex.y * 0.01)
+      );
+      c.shieldAxial = { q: hex.q, r: hex.r };
+      axialMap.set(`${hex.q},${hex.r}`, clusterIndex);
+    });
+
+    clusters.forEach((c) => {
+      if (c.shieldAxial) return;
+      c.shieldTarget.copy(c.basePos).setZ(shieldDepth);
+    });
+
+    // build live connection lines that will pull together to form the crest
+    const neighborDirs = [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+      [1, -1],
+      [-1, 1],
+    ];
+
+    const linkPairs = [];
+    axialMap.forEach((index, key) => {
+      const [q, r] = key.split(',').map(Number);
+      neighborDirs.forEach(([dq, dr]) => {
+        const neighborKey = `${q + dq},${r + dr}`;
+        if (!axialMap.has(neighborKey)) return;
+        const neighborIndex = axialMap.get(neighborKey);
+        if (neighborIndex <= index) return;
+        linkPairs.push([index, neighborIndex]);
+      });
+    });
+
+    const linkPositions = new Float32Array(linkPairs.length * 6);
+    const shieldLinkGeom = new THREE.BufferGeometry();
+    shieldLinkGeom.setAttribute('position', new THREE.BufferAttribute(linkPositions, 3));
+    const shieldLinkMat = new THREE.LineBasicMaterial({
+      color: new THREE.Color('#16ffb3'),
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const shieldLinkSegments = new THREE.LineSegments(shieldLinkGeom, shieldLinkMat);
+    clusterRoot.add(shieldLinkSegments);
+
+    // stash for animation loop
+    root.userData.shieldLinks = {
+      linkPairs,
+      linkPositions,
+      geom: shieldLinkGeom,
+      mat: shieldLinkMat,
+    };
   }
 
   const layerCount = 3;
@@ -310,35 +386,53 @@
 
     // clusters breathe & slide into staggered shield bands
     clusters.forEach((c) => {
-      const bandSpacing = lerp(1.15, 2.35, e);
-      const bandCenter = (bandCount - 1) * 0.5;
-      const targetBandY = (c.bandIndex - bandCenter) * bandSpacing;
-      const wobbleY = Math.sin(t * c.motionFreq.y + c.seed) * c.drift.y * 0.6
-        + Math.sin((t + c.seed) * 1.4) * c.drift.y * 0.35;
-      const yGoal = targetBandY + c.bandJitter + c.shieldYOffset * e + wobbleY;
-      c.group.position.y = lerp(c.group.position.y, yGoal, 0.18);
+      const wobbleAtten = 1 - e;
+      const wobbleX = (Math.sin(t * c.motionFreq.x + c.seed * 1.37) * c.drift.x
+        + Math.sin((t * 1.7) + c.seed * 0.6) * c.drift.x * 0.55) * wobbleAtten;
+      const wobbleY = (Math.sin(t * c.motionFreq.y + c.seed) * c.drift.y * 0.6
+        + Math.sin((t + c.seed) * 1.4) * c.drift.y * 0.35) * wobbleAtten;
+      const wobbleZ = Math.sin(t * c.motionFreq.z + c.seed * 0.74) * c.drift.z * wobbleAtten;
 
-      const scatterWeight = lerp(1, 0.18, e);
-      const hexTaper = 1 - Math.abs(c.bandNormalized) * 0.35 * e;
-      const wobbleX = Math.sin(t * c.motionFreq.x + c.seed * 1.37) * c.drift.x
-        + Math.sin((t * 1.7) + c.seed * 0.6) * c.drift.x * 0.5;
-      const xGoal = c.baseScatterX * scatterWeight + c.alignedX * (1 - scatterWeight);
-      c.group.position.x = lerp(c.group.position.x, xGoal * hexTaper + wobbleX, 0.2);
+      const floatX = c.basePos.x + wobbleX;
+      const floatY = c.basePos.y + wobbleY;
+      const floatZ = c.basePos.z + wobbleZ;
 
-      const wobbleZ = Math.sin(t * c.motionFreq.z + c.seed * 0.74) * c.drift.z;
-      const depthGoal = lerp(c.basePos.z, -1.2 + c.bandNormalized * 0.35, e) + wobbleZ;
-      c.group.position.z = lerp(c.group.position.z, depthGoal, 0.16);
+      const targetX = c.shieldTarget.x;
+      const targetY = c.shieldTarget.y;
+      const targetZ = c.shieldTarget.z;
+
+      c.group.position.x = lerp(c.group.position.x, lerp(floatX, targetX, e), 0.22);
+      c.group.position.y = lerp(c.group.position.y, lerp(floatY, targetY, e), 0.22);
+      c.group.position.z = lerp(c.group.position.z, lerp(floatZ, targetZ, e), 0.2);
 
       tmpAxis.copy(c.axis);
-      tmpQ.setFromAxisAngle(tmpAxis, c.rotSpeed * dt);
+      tmpQ.setFromAxisAngle(tmpAxis, c.rotSpeed * dt * (1 - e * 0.85));
       c.group.quaternion.multiply(tmpQ);
 
-      const s = lerp(1, c.pulse.value, 1 - e * 0.8);
-      c.group.scale.setScalar(s);
+      const sizeGoal = lerp(c.pulse.value, 0.92 + 0.12 * Math.sin(t * 0.7 + c.seed), e);
+      c.group.scale.setScalar(sizeGoal);
 
-      c.ptsMat.opacity  = lerp(0.98, 0.2, e);
-      c.lineMat.opacity = lerp(0.7, 0.16, e);
+      c.ptsMat.opacity  = lerp(c.ptsMat.opacity, lerp(0.98, 1.05, e), 0.2);
+      c.lineMat.opacity = lerp(c.lineMat.opacity, lerp(0.65, 0.95, e), 0.18);
     });
+
+    const shieldLinks = root.userData.shieldLinks;
+    if (shieldLinks) {
+      const { linkPairs, linkPositions, geom, mat } = shieldLinks;
+      linkPairs.forEach(([aIndex, bIndex], i) => {
+        const aPos = clusters[aIndex].group.position;
+        const bPos = clusters[bIndex].group.position;
+        const offset = i * 6;
+        linkPositions[offset + 0] = aPos.x;
+        linkPositions[offset + 1] = aPos.y;
+        linkPositions[offset + 2] = aPos.z;
+        linkPositions[offset + 3] = bPos.x;
+        linkPositions[offset + 4] = bPos.y;
+        linkPositions[offset + 5] = bPos.z;
+      });
+      geom.attributes.position.needsUpdate = true;
+      mat.opacity = lerp(mat.opacity, clamp(e * 1.35, 0, 1), 0.16);
+    }
 
     // shield reveals / subtle motion
     shieldRoot.rotation.z = lerp(-0.1, 0.12, Math.sin(t*0.25)*0.5 + 0.5);
