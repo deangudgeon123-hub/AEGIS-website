@@ -51,10 +51,10 @@
   const clustersPerBand = Math.ceil(clusterCount / bandCount);
 
   const basePointMat = new THREE.PointsMaterial({
-    color: new THREE.Color('#00f5a0'),
-    size: 0.24,
+    color: new THREE.Color('#16ffb3'),
+    size: 0.3,
     transparent: true,
-    opacity: 0.95,
+    opacity: 1,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   });
@@ -62,7 +62,7 @@
   const baseLineMat = new THREE.LineBasicMaterial({
     color: new THREE.Color('#8b5cff'),
     transparent: true,
-    opacity: 0.45,
+    opacity: 0.7,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
   });
@@ -77,7 +77,7 @@
 
     // lean clusters – fewer points, tighter bounds
     const pointTotal   = 5 + Math.floor(Math.random() * 4);
-    const sphereRadius = lerp(1.4, 2.4, Math.random());
+    const sphereRadius = lerp(4, 6, Math.random());
 
     const positions = new Float32Array(pointTotal * 3);
     for (let j = 0; j < pointTotal; j++) {
@@ -94,12 +94,12 @@
     ptsGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
     const ptsMat = basePointMat.clone();
-    ptsMat.size = lerp(0.18, 0.26, Math.random());
+    ptsMat.size = lerp(0.25, 0.35, Math.random());
     const pts = new THREE.Points(ptsGeom, ptsMat);
     group.add(pts);
 
     // minimal links
-    const conn = 1 + Math.floor(Math.random() * 3);
+    const conn = 4 + Math.floor(Math.random() * 3);
     const linePositions = new Float32Array(conn * 6);
     for (let k = 0; k < conn; k++) {
       let a = (Math.random() * pointTotal) | 0;
@@ -142,12 +142,12 @@
       lerp(0.4, 0.7, Math.random())
     );
     const axis = new THREE.Vector3(Math.random(), Math.random(), Math.random()).normalize();
-    const rotSpeed = lerp(0.03, 0.09, Math.random());
+    const rotSpeed = lerp(0.01, 0.035, Math.random());
 
     const pulse = { value: 1 };
     gsap.to(pulse, {
       value: lerp(1.08, 1.18, Math.random()),
-      duration: lerp(4.4, 7.2, Math.random()),
+      duration: lerp(8.8, 14.4, Math.random()),
       repeat: -1,
       yoyo: true,
       ease: 'sine.inOut',
@@ -336,8 +336,8 @@
       const s = lerp(1, c.pulse.value, 1 - e * 0.8);
       c.group.scale.setScalar(s);
 
-      c.ptsMat.opacity  = lerp(0.92, 0.18, e);
-      c.lineMat.opacity = lerp(0.45, 0.12, e);
+      c.ptsMat.opacity  = lerp(0.98, 0.2, e);
+      c.lineMat.opacity = lerp(0.7, 0.16, e);
     });
 
     // shield reveals / subtle motion
